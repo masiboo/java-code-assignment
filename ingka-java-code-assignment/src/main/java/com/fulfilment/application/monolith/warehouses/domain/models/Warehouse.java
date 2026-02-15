@@ -2,7 +2,7 @@
 
     import java.time.ZonedDateTime;
 
-    public class Warehouse {
+public class Warehouse {
 
   // unique identifier
   public String businessUnitCode;

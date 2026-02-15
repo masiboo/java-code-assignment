@@ -42,7 +42,13 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
 
   @Override
   public List<Warehouse> listByLocation(String location) {
-    return list("location", location).stream()
+    List<DbWarehouse> entities;
+    if (location == null) {
+      entities = listAll();
+    } else {
+      entities = list("location", location);
+    }
+    return entities.stream()
         .map(this::fromDb)
         .collect(Collectors.toList());
   }

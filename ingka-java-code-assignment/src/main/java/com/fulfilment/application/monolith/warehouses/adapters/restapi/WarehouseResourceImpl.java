@@ -11,6 +11,7 @@ import jakarta.ws.rs.WebApplicationException;
 
 import java.util.List;
 
+@jakarta.enterprise.context.ApplicationScoped
 public class WarehouseResourceImpl implements WarehouseResource {
 
   @Inject
@@ -22,12 +23,18 @@ public class WarehouseResourceImpl implements WarehouseResource {
 
   @Override
   public List<Warehouse> listAllWarehousesUnits() {
-    // This is a simple implementation, ideally we'd have a list port
-    // But since we are focusing on the requested tasks, I'll use a placeholder or minimal logic
-    return List.of(); 
+    return warehouseStore.listByLocation(null).stream().map(domainModel -> {
+      Warehouse apiModel = new Warehouse();
+      apiModel.setId(domainModel.businessUnitCode);
+      apiModel.setLocation(domainModel.location);
+      apiModel.setCapacity(domainModel.capacity);
+      apiModel.setStock(domainModel.stock);
+      return apiModel;
+    }).collect(java.util.stream.Collectors.toList());
   }
 
   @Override
+  @jakarta.transaction.Transactional
   public Warehouse createANewWarehouseUnit(@NotNull Warehouse data) {
     com.fulfilment.application.monolith.warehouses.domain.models.Warehouse domainModel = new com.fulfilment.application.
             monolith.warehouses.domain.models.Warehouse();
@@ -55,6 +62,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   }
 
   @Override
+  @jakarta.transaction.Transactional
   public void archiveAWarehouseUnitByID(String id) {
     com.fulfilment.application.monolith.warehouses.domain.models.Warehouse domainModel = new com.fulfilment.application.
             monolith.warehouses.domain.models.Warehouse();
