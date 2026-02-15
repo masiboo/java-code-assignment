@@ -5,21 +5,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.TransactionManager;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import java.util.List;
 import org.jboss.logging.Logger;
+
+import java.util.List;
 
 @Path("stores")
 @ApplicationScoped
@@ -28,8 +22,27 @@ import org.jboss.logging.Logger;
 public class StoreResource {
 
   @Inject LegacyStoreManagerGateway legacyStoreManagerGateway;
+  @Inject TransactionManager transactionManager;
 
   private static final Logger LOGGER = Logger.getLogger(StoreResource.class.getName());
+
+  private void callLegacyAfterCommit(Runnable   action) {
+    try {
+      transactionManager.getTransaction().registerSynchronization(new jakarta.transaction.Synchronization() {
+        @Override
+        public void beforeCompletion() {}
+
+        @Override
+        public void afterCompletion(int status) {
+          if (status == jakarta.transaction.Status.STATUS_COMMITTED) {
+            action.run();
+          }
+        }
+      });
+    } catch (Exception e) {
+      LOGGER.error("Failed to register transaction synchronization", e);
+    }
+  }
 
   @GET
   public List<Store> get() {
@@ -55,7 +68,7 @@ public class StoreResource {
 
     store.persist();
 
-    legacyStoreManagerGateway.createStoreOnLegacySystem(store);
+    callLegacyAfterCommit(() -> legacyStoreManagerGateway.createStoreOnLegacySystem(store));
 
     return Response.ok(store).status(201).build();
   }
@@ -77,7 +90,7 @@ public class StoreResource {
     entity.name = updatedStore.name;
     entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
 
-    legacyStoreManagerGateway.updateStoreOnLegacySystem(updatedStore);
+    callLegacyAfterCommit(() -> legacyStoreManagerGateway.updateStoreOnLegacySystem(entity));
 
     return entity;
   }
@@ -104,7 +117,7 @@ public class StoreResource {
       entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
     }
 
-    legacyStoreManagerGateway.updateStoreOnLegacySystem(updatedStore);
+    callLegacyAfterCommit(() -> legacyStoreManagerGateway.updateStoreOnLegacySystem(entity));
 
     return entity;
   }
