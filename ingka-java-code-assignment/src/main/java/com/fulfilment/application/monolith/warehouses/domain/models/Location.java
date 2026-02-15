@@ -1,6 +1,6 @@
 package com.fulfilment.application.monolith.warehouses.domain.models;
 
-public class Location {
+public class  Location {
   public String identification;
 
   // maximum number of warehouses that can be created in this location
