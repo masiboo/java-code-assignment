@@ -44,9 +44,9 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
   public List<Warehouse> listByLocation(String location) {
     List<DbWarehouse> entities;
     if (location == null) {
-      entities = listAll();
+      entities = list("archivedAt is null");
     } else {
-      entities = list("location", location);
+      entities = list("location = ?1 and archivedAt is null", location);
     }
     return entities.stream()
         .map(this::fromDb)

@@ -1,19 +1,17 @@
-    package com.fulfilment.application.monolith.warehouses.domain.models;
+package com.fulfilment.application.monolith.warehouses.domain.models;
 
-    import java.time.ZonedDateTime;
+import java.time.ZonedDateTime;
 
 public class Warehouse {
+    public String businessUnitCode;
 
-  // unique identifier
-  public String businessUnitCode;
+    public String location;
 
-  public String location;
+    public Integer capacity;
 
-  public Integer capacity;
+    public Integer stock;
 
-  public Integer stock;
+    public ZonedDateTime creationAt;
 
-  public ZonedDateTime creationAt;
-
-  public ZonedDateTime archivedAt;
+    public ZonedDateTime archivedAt;
 }

@@ -6,9 +6,7 @@ import jakarta.ws.rs.*;
 
 import java.util.List;
 
-/**
- * A JAX-RS interface. An implementation of this interface must be provided.
- */
+
 @Path("/warehouse")
 public interface WarehouseResource {
   @GET
